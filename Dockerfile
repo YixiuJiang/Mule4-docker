@@ -1,5 +1,27 @@
-FROM java:openjdk-8-jdk
-MAINTAINER Charlie Jiang
+# spring-boot-centos7
+FROM openshift/base-centos7
+
+# TODO: Put the maintainer name in the image metadata
+MAINTAINER Charlie Jiang <charlie.jiang@pactera.com>
+
+# TODO: Set labels used in OpenShift to describe the builder image
+LABEL io.k8s.description="Platform for building Mule4 application" \
+      io.k8s.display-name="Mule4  builder 1.0" \
+      io.openshift.expose-services="8080:http" \
+      io.openshift.tags="builder,java,mule4" \
+      io.openshift.s2i.scripts-url=image:///usr/libexec/s2i \
+      io.openshift.s2i.destination="/opt/s2i/destination"
+
+
+#Install Maven, Java
+RUN INSTALL_PKGS="tar unzip bc which lsof java-1.8.0-openjdk java-1.8.0-openjdk-devel" && \
+    yum install -y --enablerepo=centosplus $INSTALL_PKGS && \
+    rpm -V $INSTALL_PKGS && \
+    yum clean all -y && \
+    mkdir -p /opt/openshift && \
+    mkdir -p /opt/app-root/src && chmod -R a+rwX /opt/app-root/src && \
+    mkdir -p /opt/s2i/destination && chmod -R a+rwX /opt/s2i/destination
+
 #Add Mule runtime in Docker Container
 CMD echo "------ Add Mule runtime in Docker Container --------"
 ADD  mule-ee-distribution-standalone-4.1.2.zip /opt
@@ -20,22 +42,4 @@ RUN         mule/bin/mule -installLicense mule/conf/mule-ee-license.lic
 RUN ls -ltr mule/conf/
 CMD echo "------ Licence installed ! --------"
 #Copy and deploy mule application in runtime
-CMD echo "------ Deploying mule application in runtime ! --------"
-COPY  tmf-632-party-management-*.jar mule/apps/
-RUN ls -ltr mule/apps/
-# HTTP Service Port
-# Expose the necessary port ranges as required by the Mule Apps
-EXPOSE      8081-8082
-EXPOSE      9000
-EXPOSE      9082
-# Mule remote debugger
-EXPOSE      5000
-# Mule JMX port (must match Mule config file)
-EXPOSE      1098
-# Mule MMC agent port
-EXPOSE      7777
-# AMC agent port
-EXPOSE      9997
-# Start Mule runtime
-CMD echo "------ Start Mule runtime --------"
-CMD         ["mule/bin/mule"]
+

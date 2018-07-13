@@ -7,3 +7,9 @@
 - Put your own Mule app jar in the same folder
 - Name your Mule4 license as mule-ee-license.lic and put it in the same folder
 - Build it
+
+## Build
+
+- docker build -t mule4-docker:v1 .
+- docker tag mule4-docker:v1  yixiugg/mule4-docker
+- docker push yixiugg/mule4-docker
